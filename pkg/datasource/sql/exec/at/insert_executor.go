@@ -256,17 +256,17 @@ func (i *insertExecutor) containsPK(meta types.TableMeta, parseCtx *types.ParseC
 		return false
 	}
 
-	matchCounter := 0
+	columnMap := make(map[string]bool)
 	for _, column := range parseCtx.InsertStmt.Columns {
-		for _, pkName := range pkColumnNameList {
-			if strings.EqualFold(pkName, column.Name.O) ||
-				strings.EqualFold(pkName, column.Name.L) {
-				matchCounter++
-			}
+		columnMap[strings.ToLower(column.Name.O)] = true
+		columnMap[strings.ToLower(column.Name.L)] = true
+	}
+	for _, pkName := range pkColumnNameList {
+		if !columnMap[strings.ToLower(pkName)] {
+			return false
 		}
 	}
-
-	return matchCounter == len(pkColumnNameList)
+	return true
 }
 
 // containPK compare column name and primary key name
